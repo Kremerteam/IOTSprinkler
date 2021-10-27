@@ -3,6 +3,6 @@
 
 Student Subcomponents:
 (1) Alex - Main Driver, Sprinkler Driver, WIFI Driver, Logic Analyzer Implementation
-(2) Zane - Switch Driver, Power Configuration, Valve Configuration, PCB Testing
-(3) Rithvik - Enclosure, Light Sensor Driver, PCB Design, PCB Part Attachment
+(2) Zane - Switch Driver, Power Configuration, Valve Configuration, PCB Part Attachment
+(3) Rithvik - Enclosure, Light Sensor Driver, PCB Design, PCB Testing
 (4) Nikhil - Clock Driver, Graphics Driver, User Interface, System Testing
