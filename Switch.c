@@ -13,7 +13,8 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include "../inc/tm4c123gh6pm.h"
-
+#include "../inc/Timer1A.h"
+#include "music.h"
 
 #define PC4   (*((volatile uint32_t *)0x40006040))
 #define PF4   (*((volatile uint32_t *)0x40025040)) //Change Mode (LCD), 0x10 is not pressed, 0x00, Reset Switch
@@ -31,6 +32,8 @@ void DelayWait10ms(uint32_t n){uint32_t volatile time;
 }
 
 
+
+static bool pressed = false;
 //Handles switch inputs
 void Switch_On(void){
 	PC4 = 0x10;
@@ -38,6 +41,17 @@ void Switch_On(void){
 
 void Switch_Off(void){
 	PC4 = 0x00;
+}
+
+void Io_Handler(void){
+
+		if(PF4 == 0x10){
+				RESET(); // ask professor about reset function of PF0 and how to acess that function.
+			pressed=true;
+			DelayWait10ms(10); //Debounce
+		}
+		else
+			pressed = false;
 }
 
 void Switches_Init(void){
@@ -63,4 +77,6 @@ void Switches_Init(void){
   GPIO_PORTF_AFSEL_R    = 0x00;             // disable alt funct on PF7-0
   GPIO_PORTF_PUR_R      = 0x11;             // enable pull-up on PF0 and PF4
   GPIO_PORTF_DEN_R      = 0x1F;             // enable digital I/O on PF4-0
+		
+	Timer1A_Init(Io_Handler,4294967295,1);
 }
