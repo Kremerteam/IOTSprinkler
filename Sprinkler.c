@@ -8,3 +8,165 @@
  TA: Hassan Iqbal
  Date of last revision: 10/27/2021
  */
+#include <stdbool.h>
+#include <stdint.h>
+#include <string.h>
+#include <stdlib.h>
+#include "Sprinkler.h"
+#include "Switch.h"
+
+static uint32_t sprinkler_duration = 30;
+static uint8_t sprinkler_state = 0;
+
+//Declare Time Variables
+uint8_t second=0;
+uint8_t minute=0;
+uint8_t hour=0;
+
+uint8_t timer_second=0;
+uint8_t timer_minute=0;
+uint8_t timer_hour=0;
+
+uint8_t duration=30;
+uint8_t current_duration=30;
+
+//Declare Status Variables
+static bool timer_set = false;
+static bool sprinkler_on = false;
+
+void Start_Sprinkler(){
+	Switch_On();
+	sprinkler_on = true;
+}
+
+void Stop_Sprinkler(){
+	Switch_Off();
+	sprinkler_on = false;
+}
+
+bool Get_Sprinkler_On(){
+	return sprinkler_on;
+}
+
+bool Get_Timer_Set(){
+	return timer_set;
+}
+
+//type 0 second
+//type 1 minute
+//type 2 hour
+
+//Increments time of the display clock
+void IncrementTime(uint8_t type)
+{
+		if(type==0){ //Second
+			second++;
+			if(second==60)
+			{
+				second=0;
+				minute++;
+				if(minute==60)
+				{
+					minute=0;
+					hour++;
+					if(hour==24)
+					{
+						hour=0;
+					}
+				}
+			}
+		}
+		if(type==1){ //Minute
+			minute++;
+				if(minute==60)
+				{
+					minute=0;
+					hour++;
+					if(hour==24)
+					{
+						hour=0;
+					}
+				}
+		}
+		if(type==2){ //Hour
+			hour++;
+			if(hour==24)
+			{
+				hour=0;
+			}
+		}
+		if(sprinkler_on){
+			current_duration--;
+			if(current_duration==0)
+			{
+				Stop_Sprinkler();
+				current_duration=duration;
+			}			
+		}
+		if(timer_set && timer_hour==hour && timer_minute==minute)
+				Start_Sprinkler();	
+}
+
+//type 0 second
+//type 1 minute
+//type 2 hour
+
+//Increments time of the alarm clock
+void IncrementTimerTime(uint8_t type)
+{
+		if(type==0){ //Second
+			timer_second++;
+			if(timer_second==60)
+			{
+				timer_second=0;
+				timer_minute++;
+				if(timer_minute==60)
+				{
+					timer_minute=0;
+					timer_hour++;
+					if(timer_hour==24)
+					{
+						timer_hour=0;
+					}
+				}
+			}
+		}
+		if(type==1){ //Minute
+			timer_minute++;
+				if(timer_minute==60)
+				{
+					timer_minute=0;
+					timer_hour++;
+					if(timer_hour==24)
+					{
+						timer_hour=0;
+					}
+				}
+		}
+		if(type==2){ //Hour
+			timer_hour++;
+			if(timer_hour==24)
+			{
+				timer_hour=0;
+			}
+		}
+		
+}
+
+void Set_Sprinkler_Timer(uint8_t hour, uint8_t minute){
+	timer_hour = hour;
+	timer_minute = minute;
+	timer_set = true;
+}
+
+void Clear_Sprinkler(){
+	timer_hour = 0;
+	timer_minute = 0;
+	timer_set = false;
+}
+
+void Set_Duration(uint32_t minutes){
+	sprinkler_duration = minutes;
+}
+
+

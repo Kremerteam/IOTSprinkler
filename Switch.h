@@ -9,10 +9,9 @@
  Date of last revision: 10/27/2021
  */
 
-void DelayWait10ms(uint32_t n){};
+void Switch_On(void);
 
-void Switch_On(void){};
+void Switch_Off(void);
 
-void Switch_Off(void){};
+void Switches_Init(void);
 
-void Switches_Init(void){};

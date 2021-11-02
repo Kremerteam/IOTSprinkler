@@ -34,9 +34,9 @@
 #include "UART.h"
 #include "PortF.h"
 #include "esp8266.h"
-#include "Speaker.h"
 #include "Clock_LCD.h"
-#include "Lab3_Systick.h"
+#include "Clock.h"
+#include "Sprinkler.h"
 #include "../inc/Unified_Port_Init.h"
 
 void EnableInterrupts(void);    // Defined in startup.s
@@ -76,181 +76,9 @@ void Pause(void){
   }
 }
 
-//Declare Time Variables
-static uint8_t second=0;
-static uint8_t minute=0;
-static uint8_t hour=0;
-
-static uint8_t stop_millisecond=0;
-static uint8_t stop_second=0;
-static uint8_t stop_minute=0;
-static uint8_t stop_hour=0;
-
-static uint8_t alarm_second=1;
-static uint8_t alarm_minute=1;
-static uint8_t alarm_hour=0;
-
-//Declare Status Variables
-static bool alarm = false;
-static bool alarm_set = false;
-static bool refresh = false;
-
-//Turns alarm on
-void trigger_alarm(void)
-{
-	alarm=true;
-}
-
-//Updates clock display
-void refresh_clock(void)
-{
-	refresh=true;
-}
-	
-//type 0 second
-//type 1 minute
-//type 2 hour
-
-//Increments time of the display clock
-void IncrementTime(uint8_t type)
-{
-		if(type==0){ //Second
-			second++;
-			if(second==60)
-			{
-				second=0;
-				minute++;
-				if(minute==60)
-				{
-					minute=0;
-					hour++;
-					if(hour==24)
-					{
-						hour=0;
-					}
-				}
-			}
-		}
-		if(type==1){ //Minute
-			minute++;
-				if(minute==60)
-				{
-					minute=0;
-					hour++;
-					if(hour==24)
-					{
-						hour=0;
-					}
-				}
-		}
-		if(type==2){ //Hour
-			hour++;
-			if(hour==24)
-			{
-				hour=0;
-			}
-		}
-		
-		if(alarm_hour==hour && alarm_minute==minute)
-				trigger_alarm();		
-}
-
-//type 0 second
-//type 1 minute
-//type 2 hour
-
-//Increments time of the alarm clock
-void IncrementAlarmTime(uint8_t type)
-{
-		if(type==0){ //Second
-			alarm_second++;
-			if(alarm_second==60)
-			{
-				alarm_second=0;
-				alarm_minute++;
-				if(alarm_minute==60)
-				{
-					alarm_minute=0;
-					alarm_hour++;
-					if(alarm_hour==24)
-					{
-						alarm_hour=0;
-					}
-				}
-			}
-		}
-		if(type==1){ //Minute
-			alarm_minute++;
-				if(alarm_minute==60)
-				{
-					alarm_minute=0;
-					alarm_hour++;
-					if(alarm_hour==24)
-					{
-						alarm_hour=0;
-					}
-				}
-		}
-		if(type==2){ //Hour
-			alarm_hour++;
-			if(alarm_hour==24)
-			{
-				alarm_hour=0;
-			}
-		}
-		
-}
-
-//Increments time of the stopwatch
-void IncrementStopTime(void)
-{
-			stop_millisecond++;
-			if(stop_millisecond==100){
-				stop_millisecond=0;
-				stop_second++;
-				if(stop_second==60)
-				{
-					stop_second=0;
-					stop_minute++;
-					if(stop_minute==60)
-					{
-						stop_minute=0;
-						stop_hour++;
-						if(stop_hour==24)
-						{
-							stop_hour=0;
-						}
-					}
-				}
-		}
-}
-
-//Resets stop watch to 0s
-void ResetStopWatch(void)
-{
-	stop_hour=0;
-	stop_minute=0;
-	stop_second=0;
-	stop_millisecond=0;
-}
-
-//Adds another minute to alarm when it goes off if toggled
-void SnoozeAlarm(void)
-{
-	if(alarm)
-	{
-		Sound_Off();
-		alarm_set=true;
-		alarm=false;
-		alarm_minute+=1;
-	}
-	
-}
 		
 //Declare state logic
 static uint8_t state = 0;
-static uint8_t old_state=0;
-static uint8_t stopwatch=0;
 
 //Allows drivers to access main state value
 int getState(void)
@@ -261,28 +89,9 @@ int getState(void)
 //Goes to a new state 0,1,2,3
 void ChangeMode()
 {
-		state = (state+1)%4;
+		state = (state+1)%2;
 }
 
-//Used when PC7 pressed. Turns off alarm, resets to state 0, or toggles stopwatch
-void Confirm() //PC7
-{
-	alarm = false;
-	if(state==2){
-		state=0;
-		alarm_set=true;
-	}
-	if(state==1)
-		state=0;
-	if(state==3)
-		stopwatch ^=1;
-		
-}
-
-int getStopWatch(void)
-{
-	return stopwatch;
-}
 
 
 // ----------------------------------- TM4C_to_Blynk ------------------------------
@@ -333,22 +142,20 @@ void Blynk_to_TM4C(void){int j; char data;
       LED = pin_int;
       PortF_Output(LED<<2); // Blue LED
 		}
-		if(pin_num == 0x03 && pin_int==1 && state==1) //LOOK AT PIN_INT
-			IncrementTime(1); //Increment Clock Minute by 1
-		if(pin_num == 0x03 && pin_int==1 && state==2)
-			IncrementAlarmTime(1); //Increment Alarm Minute by 1
-		if(pin_num == 0x02 && pin_int==1 && state==1)
-			IncrementTime(2); //Increment Clock by 1 Hour
-		if(pin_num == 0x02 && pin_int==1 && state==2)
-			IncrementAlarmTime(2); //Increment Alarm Hour by 1
-		if(pin_num==0x05 && pin_int==1)
-			Confirm(); //Confirm and return to home clock
+		if(pin_num == 0x00 && pin_int==1 && !Get_Sprinkler_On())
+			Start_Sprinkler();
+		if(pin_num == 0x00 && pin_int==0 && Get_Sprinkler_On())
+			Stop_Sprinkler();
 		if(pin_num == 0x01 && pin_int==1)
 			ChangeMode(); //Increase state by 1
-		if(pin_num == 0x04 && pin_int==1 && state==3)
-			ResetStopWatch(); //Sets stopwatch to 0
+		if(pin_num == 0x03 && pin_int==1 && !Get_Timer_Set())
+			Set_Sprinkler_Timer(timer_hour,timer_minute);
+		if(pin_num == 0x03 && pin_int==0 && Get_Timer_Set())
+			Clear_Sprinkler();
 		if(pin_num == 0x04 && pin_int==1)
-			SnoozeAlarm(); //Adds a minute to alarm
+			IncrementTimerTime(2); //Increment Timer Hour by 1
+		if(pin_num == 0x05 && pin_int==1)
+			IncrementTimerTime(1); //Increment Timer Minute by 1
 #ifdef DEBUG3
       Output_Color(ST7735_CYAN);
       ST7735_OutString("Rcv VP1 data=");
@@ -371,50 +178,31 @@ void Blynk_to_TM4C(void){int j; char data;
 bool send_info = false;
 
 void SendInformation(void){
-/*  uint32_t thisF;
-  thisF = PortF_Input();
-// your account will be temporarily halted if you send too much data
-  if(thisF != LastF){
-    TM4C_to_Blynk(74, thisF);  // VP74
-#ifdef DEBUG3
-    Output_Color(ST7735_WHITE);
-    ST7735_OutString("Send 74 data=");
-    ST7735_OutUDec(thisF);
-    ST7735_OutChar('\n');
-#endif
-  }
-  LastF = thisF;*/
-	if(send_info)
-	{
+	if(send_info){
 		send_info=false;
 		//Difference output to Blynk based on state
-		if(state==0 || state==1)
-		{
 			TM4C_to_Blynk(74, hour);
 			TM4C_to_Blynk(75, minute);
-			TM4C_to_Blynk(76, second);
-			TM4C_to_Blynk(77, 0);
-		}
-		else if(state==2)
-		{
-			TM4C_to_Blynk(74, alarm_hour);
-			TM4C_to_Blynk(75, alarm_minute);
-			TM4C_to_Blynk(76, alarm_second);
-			TM4C_to_Blynk(77, 0);
-		}
-		else if(state==3)
-		{
-			TM4C_to_Blynk(74, stop_hour);
-			TM4C_to_Blynk(75, stop_minute);
-			TM4C_to_Blynk(76, stop_second);
-			TM4C_to_Blynk(77, stop_millisecond);
-		}
+			TM4C_to_Blynk(76, state);
+			TM4C_to_Blynk(77, timer_hour);
+			TM4C_to_Blynk(78, timer_minute);			
+	}	
 			
 }
-		
-	
-}
 
+
+void Blynk_Init(void){
+	ESP8266_Init();       // Enable ESP8266 Serial Port
+  ESP8266_Reset();      // Reset the WiFi module
+  ESP8266_SetupWiFi();  // Setup communications to Blynk Server  
+  
+  Timer2_Init(&Blynk_to_TM4C,800000); 
+  // check for receive data from Blynk App every 10ms
+
+  Timer3_Init(&SendInformation,40000000); 
+  // Send data back to Blynk App every 1/2 second
+}
+/*
 //========================Main Logic=============================
  
 int main(void){       
@@ -480,3 +268,4 @@ int main(void){
 	}
   
 }
+*/
