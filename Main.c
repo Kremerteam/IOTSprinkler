@@ -22,6 +22,7 @@
 #include "../inc/Unified_Port_Init.h"
 #include "Blynk.h"
 #include "Sprinkler.h"
+#include "Switch.h"
 
 void EnableInterrupts(void);    // Defined in startup.s
 void DisableInterrupts(void);   // Defined in startup.s
@@ -37,6 +38,7 @@ void WaitForInterrupt(void);    // Defined in startup.s
 	SysTick_Init();
 	Output_Init();
 	Blynk_Init();
+	Switches_Init();
   EnableInterrupts();
 	 
 

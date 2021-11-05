@@ -142,9 +142,9 @@ void Blynk_to_TM4C(void){int j; char data;
       LED = pin_int;
       PortF_Output(LED<<2); // Blue LED
 		}
-		if(pin_num == 0x00 && pin_int==1 && !Get_Sprinkler_On())
+		if(pin_num == 0x02 && pin_int==1 && Get_Sprinkler_On()==0)
 			Start_Sprinkler();
-		if(pin_num == 0x00 && pin_int==0 && Get_Sprinkler_On())
+		else if(pin_num == 0x02 && pin_int==1 && Get_Sprinkler_On()==1)
 			Stop_Sprinkler();
 		if(pin_num == 0x01 && pin_int==1)
 			ChangeMode(); //Increase state by 1
@@ -178,6 +178,7 @@ void Blynk_to_TM4C(void){int j; char data;
 bool send_info = false;
 
 void SendInformation(void){
+	send_info = true;
 	if(send_info){
 		send_info=false;
 		//Difference output to Blynk based on state

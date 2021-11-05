@@ -31,24 +31,24 @@ uint8_t duration=30;
 uint8_t current_duration=30;
 
 //Declare Status Variables
-static bool timer_set = false;
-static bool sprinkler_on = false;
+static uint8_t timer_set = 0;
+static uint8_t sprinkler_on = 0;
 
 void Start_Sprinkler(){
 	Switch_On();
-	sprinkler_on = true;
+	sprinkler_on = 1;
 }
 
 void Stop_Sprinkler(){
 	Switch_Off();
-	sprinkler_on = false;
+	sprinkler_on = 0;
 }
 
-bool Get_Sprinkler_On(){
+uint8_t Get_Sprinkler_On(){
 	return sprinkler_on;
 }
 
-bool Get_Timer_Set(){
+uint8_t Get_Timer_Set(){
 	return timer_set;
 }
 
@@ -156,13 +156,13 @@ void IncrementTimerTime(uint8_t type)
 void Set_Sprinkler_Timer(uint8_t hour, uint8_t minute){
 	timer_hour = hour;
 	timer_minute = minute;
-	timer_set = true;
+	timer_set = 1;
 }
 
 void Clear_Sprinkler(){
 	timer_hour = 0;
 	timer_minute = 0;
-	timer_set = false;
+	timer_set = 0;
 }
 
 void Set_Duration(uint32_t minutes){
