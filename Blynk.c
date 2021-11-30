@@ -1,5 +1,5 @@
 /*
- LAB8
+ LAB11
  File Name: Blynk.c
  Author(s): Alex Kremer, Zane Zwanenburg, Rithvik Dyava, Nikhil Krish
  Initial Creation Date: 10/27/2021
@@ -86,10 +86,15 @@ int getState(void)
 	return state;
 }
 
-//Goes to a new state 0,1,2,3
+//Goes to a new state 0,1,2
 void ChangeMode()
 {
-		state = (state+1)%2;
+		state = (state+1)%3;
+}
+
+void ChangeModeCustom(uint8_t num)
+{
+		state = num;
 }
 
 
@@ -203,70 +208,4 @@ void Blynk_Init(void){
   Timer3_Init(&SendInformation,40000000); 
   // Send data back to Blynk App every 1/2 second
 }
-/*
-//========================Main Logic=============================
- 
-int main(void){       
-  PLL_Init(Bus80MHz);   // Bus clock at 80 MHz
-  DisableInterrupts();  // Disable interrupts until finished with inits
-  PortF_Init();
-	Port_C_Init();
-	Port_B_Init();
-	Output_Init();
-	SysTick_Init();
-	Speaker_Init();
-	
-  LastF = PortF_Input();
-#ifdef DEBUG3
-  Output_Init();        // initialize ST7735
-  ST7735_OutString("EE445L Lab 4D\nBlynk example\n");
-#endif
-#ifdef DEBUG1
-  UART_Init(5);         // Enable Debug Serial Port
-  UART_OutString("\n\rEE445L Lab 4D\n\rBlynk example");
-#endif
-  ESP8266_Init();       // Enable ESP8266 Serial Port
-  ESP8266_Reset();      // Reset the WiFi module
-  ESP8266_SetupWiFi();  // Setup communications to Blynk Server  
-  
-  Timer2_Init(&Blynk_to_TM4C,800000); 
-  // check for receive data from Blynk App every 10ms
 
-  Timer3_Init(&SendInformation,40000000); 
-  // Send data back to Blynk App every 1/2 second
-  EnableInterrupts();
-
-  while(1) {   
-    //WaitForInterrupt(); // low power mode
-		if(alarm && alarm_set){
-		Sound_On();
-		alarm_set=false;
-	}
-	//Turn off alarm sound
-	if(!alarm)
-		Sound_Off();
-	//Logic to render state on LCD
-	if(old_state!=state || refresh){
-		send_info=true;
-		if(refresh)
-			refresh=false;
-		if(old_state!=state){
-			old_state=state;
-			ST7735_FillScreen(ST7735_BLACK);
-		}
-		if(state==0){
-			RenderClock(hour,minute,second);
-		}
-		else if(state==1)
-			RenderSetClock(hour,minute,second);
-		else if(state==2)
-			RenderSetAlarm(alarm_hour,alarm_minute,alarm_second);
-		else if(state==3){
-			RenderStopWatch(stop_hour,stop_minute,stop_second,stop_millisecond);
-		}
-	}
-
-	}
-  
-}
-*/

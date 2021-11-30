@@ -1,5 +1,5 @@
 /*
- LAB8
+ LAB11
  File Name: LCD_Graphics.c
  Author(s): Alex Kremer, Zane Zwanenburg, Rithvik Dyava, Nikhil Krish
  Initial Creation Date: 10/27/2021
@@ -8,54 +8,83 @@
  TA: Hassan Iqbal
  Date of last revision: 10/27/2021
  */
-
+#include <stdbool.h>
 #include <stdint.h>
+#include <string.h>
+#include <stdlib.h>
 #include "../inc/tm4c123gh6pm.h"
 #include "../inc/PLL.h"
 #include "../inc/ST7735.h"
 #include "../inc/CortexM.h"
 #include "../inc/LaunchPad.h"
+#include "Sprinkler.h"
+#include "Blynk.h"
 
 
-int16_t colorLoop[] = {ST7735_RED, ST7735_GREEN, ST7735_BLACK, ST7735_BLUE,  ST7735_CYAN, ST7735_MAGENTA, ST7735_YELLOW, ST7735_WHITE};
-
-/*
-	Initialization function that will set the screen to red
-	Input: none
-	Output: void
-*/
-void ScreenInitialzation(){
-	ST7735_InitR(INITR_REDTAB);
+//LCD Display
+void LCD_Display(void){
+			ST7735_FillScreen(ST7735_BLACK);
+			ST7735_SetCursor(0,0);
+      Output_Color(ST7735_CYAN);
+	
+			//Current Time
+			ST7735_OutString("Time: ");
+			ST7735_OutUDec(hour);
+			ST7735_OutString(":");
+			ST7735_OutUDec(minute);
+      ST7735_OutChar('\n');
+			ST7735_OutChar('\n');
+	
+			//Sprinkler On/Off
+			ST7735_OutString("Sprinkler: ");
+			if(Get_Sprinkler_On()==1){
+				ST7735_OutString("ON");
+				ST7735_OutChar('\n');
+				ST7735_OutString("Time Remaining: ");
+				ST7735_OutUDec(current_duration);
+				ST7735_OutString(" Minutes");
+			}
+			else
+				ST7735_OutString("OFF");
+			ST7735_OutChar('\n');
+			
+			//Mode - Manual, Timer, or Light Sensor
+			ST7735_OutString("Mode: ");
+			
+			if(getState()==0) //Manual
+				ST7735_OutString("Manual");
+			if(getState()==1){ //Timer
+				ST7735_OutString("Timer");
+				ST7735_OutChar('\n');
+				ST7735_OutString("Timer Set");
+				if(Get_Timer_Set()==1){
+					ST7735_OutString(" at");
+					ST7735_OutUDec(timer_hour);
+					ST7735_OutString(":");
+					ST7735_OutUDec(timer_minute);
+				}
+				else
+					ST7735_OutString(": NO");
+			}
+			if(getState()==2){ //Light Sensing
+				ST7735_OutString("Light Sensor");
+			}
+			ST7735_OutChar('\n');
+			
+			//DEBUG
+			ST7735_OutString("DEBUG: ");
+   //   ST7735_OutUDec(U);
+      ST7735_OutChar('\n');
 }
 
 /*
-	Set the screen with the set of data for a corresponding blurb. It is printed row after row leaving a spacing of 2 rows and 3 columns
-	Input: pt		Array of strings containing blurb
-		   info     Array of corresponding data points
-	Output: void
-*/
-void SetInfographics(char *pt[], uint32_t info[]){
-	for(uint8_t i = 0; i<size; i++){
-		ST7735_DrawString(i+2,3, pt[i], colorLoop[i+1]);
-		ST7735_FillScreen(colorLoop[i+1]);
-		ST7735_OutUDec4(uint32_t info[i]);
-	}
+void LCD_Graph(){
+		//	ST7735_PlotClear(4,127);
+			ST7735_XYplotInit("",0,1000,0,300,ST7735_BLACK);
+			ST7735_XYplot(1000,MY_X,ActualY,ST7735_BLUE);
+			ST7735_XYplot(1000,MY_X,WantedY,ST7735_RED);
 }
-
-
-/*
-	Set the row with the data for a corresponding blurb. It is printed row specified
-	Input: pt		strings containing blurb
-		   info     corresponding data points
-		   row 		row to be changed
-	Output: void
 */
-void RowDisplayChange(char *pt, uint32_t info, uint32_t row){
-	ST7735_DrawString(row+2,3, pt, colorLoop[row+1]);
-	ST7735_FillScreen(colorLoop[row+1]);
-	ST7735_OutUDec4(uint32_t info[row]);	
-}
-
 /*
 	Clears screen with corresponding color
 	Input:	color 	The color to fill the new screen

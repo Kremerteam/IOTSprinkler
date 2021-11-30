@@ -1,5 +1,5 @@
 /*
- LAB8
+ LAB11
  File Name: Sprinkler.c
  Author(s): Alex Kremer, Zane Zwanenburg, Rithvik Dyava, Nikhil Krish
  Initial Creation Date: 10/27/2021
@@ -15,8 +15,8 @@
 #include "Sprinkler.h"
 #include "Switch.h"
 
-static uint32_t sprinkler_duration = 30;
-static uint8_t sprinkler_state = 0;
+//static uint32_t sprinkler_duration = 30;
+//static uint8_t sprinkler_state = 0;
 
 //Declare Time Variables
 uint8_t second=0;
@@ -36,6 +36,7 @@ static uint8_t sprinkler_on = 0;
 
 void Start_Sprinkler(){
 	Switch_On();
+	current_duration = duration;
 	sprinkler_on = 1;
 }
 
@@ -44,6 +45,7 @@ void Stop_Sprinkler(){
 	sprinkler_on = 0;
 }
 
+//Return 1 if on, 0 if off
 uint8_t Get_Sprinkler_On(){
 	return sprinkler_on;
 }
@@ -166,7 +168,7 @@ void Clear_Sprinkler(){
 }
 
 void Set_Duration(uint32_t minutes){
-	sprinkler_duration = minutes;
+	duration = minutes;
 }
 
 
